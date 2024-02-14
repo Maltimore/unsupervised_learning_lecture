@@ -1,4 +1,4 @@
-\documentclass[Nike]{tuberlinbeamer}
+\documentclass[Nike,draft]{tuberlinbeamer}
 \graphicspath{{./tuberlinbeamer/}{./figures/}{./../scripts/figures}}
 \usepackage[english]{babel}  % 'babel' muss geladen werden
 \usepackage[utf8]{inputenc}  % optional, aber empfehlenswert
@@ -22,11 +22,6 @@
 \newcommand{\x}{\boldsymbol{x}}
 \newcommand{\y}{\boldsymbol{y}}
 
-
-% Notes on second screen (\note{...}) using `pdfpc --notes=right generative_nns.pdf`.
-%\usepackage{pgfpages}
-%\usepackage{mybeamerbasenotes}
-%\setbeameroption{show notes on second screen}
 
 \title{Unsupervised Learning}
 \author{Malte Esders, Christopher Anders, Wojciech Samek}
@@ -71,7 +66,7 @@
   \begin{center}
     \url{https://github.com/Maltimore/unsupervised_learning_lecture}\\
   \end{center}
-  Contains all code to generate plots\\
+  Contains code to generate plots\\
   Parts not otherwise marked: BSD licensed
 \end{frame}
 
@@ -214,7 +209,6 @@
   \begin{columns}[T]
     \column{0.6\textwidth}
       Minkowski distance generalizes Euclidean and Manhattan distance:
-      \todo{Notation $\Delta x_i$ is confusion because x is used already.}
       \begin{equation*}
         d(\x, \y) = \Bigg(\sum_{i=1}^d |\Delta x_i|^p\Bigg)^{1/p}
       \end{equation*}
@@ -325,7 +319,7 @@
 \begin{frame}
   \frametitle{Hierarchical Clustering}
   \begin{itemize}[<+->]
-    \item graph-based
+    \item graph-based (no embedding needed!)
     \item builds a hierarchy of clusters, either top down (``divisive'') or bottom up (``agglomerative'')
     \item intuitive
     \item suggests numbers of clusters
@@ -336,7 +330,7 @@
 
 \begin{frame}
   \frametitle{Agglomerative clustering algorithm:}
-  Let $\mathpzc{D}_i$, $\mathpzc{D}_j$ be the sets containing the samples in clusters $i$ and $j$.  \\
+  Let $\mathpzc{D}_i$ be the sets containing the samples in cluster $i$.  \\
   \bigskip
 
   choose $n_{final}$ clusters\\
