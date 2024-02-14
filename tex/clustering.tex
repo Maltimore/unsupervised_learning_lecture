@@ -1,9 +1,13 @@
-\documentclass[Nike,draft]{tuberlinbeamer}
+% Presentation originally created by Malte Esders in Summer 2018
+% Extended by Christopher Anders in Summer 2019
+% Material from Wojciech Samek added by Malte Esders in February 2024
+\documentclass[Nike]{tuberlinbeamer}
 \graphicspath{{./tuberlinbeamer/}{./figures/}{./../scripts/figures}}
 \usepackage[english]{babel}  % 'babel' muss geladen werden
 \usepackage[utf8]{inputenc}  % optional, aber empfehlenswert
-\usepackage{amsmath,amssymb}
+\usepackage{amsmath,amssymb,amsfonts}
 \usepackage{hyperref}
+\usepackage{dsfont}
 % recommended styles: authoryear, alphabetic
 \usepackage[style=authoryear]{biblatex}
 
@@ -16,11 +20,22 @@
 \usepackage{hyperref}
 \usepackage{svg}
 \usepackage{algorithm2e}
+\usepackage{algorithmic}
 
-%\usepackage{showframe}
-
+\newcommand{\R}{\ensuremath{\mathds{R}}}
 \newcommand{\x}{\boldsymbol{x}}
 \newcommand{\y}{\boldsymbol{y}}
+\newcommand{\bx}{{\mathbf x}}
+\newcommand{\by}{{\mathbf y}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bv}{\mathbf{v}}
+\newcommand{\bu}{\mathbf{u}}
+\newcommand{\be}{\mathbf{e}}
+\DeclareMathOperator*{\Corr}{Corr}
+\DeclareMathOperator*{\E}{E}
+\DeclareMathOperator*{\sign}{sign}
+\DeclareMathOperator{\Cov}{Cov}
 
 
 \title{Unsupervised Learning}
@@ -32,31 +47,17 @@
 
 \usepackage{mycommands}
 
-\AtBeginSection[]
-{
-  \begin{frame}
-    \frametitle{Agenda}
-    \setcounter{tocdepth}{1}
-    \tableofcontents[currentsection]
-  \end{frame}
-}
-
 \AtBeginSubsection[]
 {
   \begin{frame}
+    \small
     \frametitle{Agenda}
     \setcounter{tocdepth}{2}
     \tableofcontents[currentsection,currentsubsection]
   \end{frame}
 }
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
-
-
 \frame{\titlepage}
 
 
@@ -68,12 +69,6 @@
   \end{center}
   Contains code to generate plots\\
   Parts not otherwise marked: BSD licensed
-\end{frame}
-
-\begin{frame}
-  \frametitle{Agenda}
-  \setcounter{tocdepth}{1}
-  \tableofcontents
 \end{frame}
 
 
@@ -538,6 +533,243 @@
   \tiny \url{http://scikit-learn.org/stable/modules/clustering.html} \cite{pedregosa2011scikit}
 \end{frame}
 
+
+\section{Dimensionality reduction}
+\subsection{Principal Component Analysis}
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Dimensionalty Reduction - Motivation}
+In many applications, we have
+\begin{itemize}
+\item high-dimensional data
+\item reason to believe they lie close to a lower dimensional subspace
+\item[$\rightarrow$] Fewer parameters needed to account for the data properties \\
+{\em hidden causes} or {\em latent variables}
+\end{itemize}
+\vspace{1em} \pause
+Examples:
+\begin{itemize}
+\item you want to classify high resolution images
+\item you want to make a predictive model based on hundreds of customer attributes
+\item you want to analyse high dimensional neural data
+\item you want to detect trends in news data
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Why Dimensionalty Reduction}
+\begin{itemize}
+\item \textbf{Visualization}:  \\ Insights into high-dimensional structures in the data
+\item \textbf{Better Generalization}: \\ Fewer dimensions $\rightarrow$ less chances of overfitting
+\item \textbf{Speeding up} learning algorithms: \\
+Most algorithms scale badly with increasing data dimensionality
+\item \textbf{Data compression}: \\
+Less storage requirements
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{The mathematical model for dimensionalty reduction}
+We have
+\begin{itemize}
+\item high-dimensional data $X=[\bx_1,\bx_2,\dots,\bx_N]\in\R^{D\times N}$
+\item reason to believe they lie close to a lower dimensional subspace
+\item[$\rightarrow$] $k < D$ parameters needed to account for the data properties \\
+{\em hidden causes} or {\em latent variables}  $H \in \R^{k \times N}$
+\end{itemize}
+\vspace{1em} \pause
+\textbf{Goal:}  Find $k < D$  hidden causes  $H \in \R^{k \times N}$ , that explain the observed data via a mixing $W \in \R^{D \times k}$:
+\[ X \approx W H\]
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Principal Component Analysis}
+\small
+We obtained some data $X=[\bx_1,\bx_2,\dots,\bx_N]\in\R^{D\times N}$\\
+PCA finds a direction $\bw \in\R^D$ such that the variance of the projected data $\bw^\top X$
+is maximal  \pause
+\begin{eqnarray*}
+\Var(\bw^T X) &=& \frac{1}{N} \sum_{n = 1}^{N} (\bw^\top \bx_n - \E(\bw^\top \bx))^2 \\ \pause
+ &=& \frac{1}{N} \sum_{n = 1}^{N} (\bw^\top \bx_n - \bw^\top \E(\bx))^2 = \frac{1}{N} \sum_{n = 1}^{N} (\bw^\top (\bx_n - \E(\bx)))^2 \\\pause
+ &=& \frac{1}{N} \sum_{n = 1}^{N} \bw^\top (\bx_n - \E(\bx)) \cdot  (\bx_n - \E(\bx))^\top \bw \\\pause
+ &=& \bw^\top \underbrace{\left( \frac{1}{N} \sum_{n = 1}^{N}  (\bx_n - \E(\bx)) \cdot  (\bx_n - \E(\bx))^\top \right)}_{\text{Covariance matrix S}}\bw
+\end{eqnarray*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Principal Component Analysis}
+\small
+We obtained some data $X=[\bx_1,\bx_2,\dots,\bx_N]\in\R^{D\times N}$\\
+\vspace{1em}
+PCA finds a direction $\bw \in\R^D$ such that the variance of the projected data $\bw^\top X$
+is maximal
+\begin{eqnarray*}
+\Var(\bw^T X) &=&  \bw^\top \underbrace{\left( \frac{1}{N} \sum_{n = 1}^{N}  (\bx_n - \E(\bx)) \cdot  (\bx_n - \E(\bx))^\top \right)}_{\text{Covariance matrix S}}\bw \\ \pause
+ &=&  \bw^\top X X^\top\bw
+\end{eqnarray*}
+\hfill where we assume centered data\\
+\vspace{1em} \pause
+And: we need to constrain $\bw$
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Principal Component Analysis}
+PCA finds a direction $\bw \in\R^D$ such that the variance of the projected data $\bw^T X$
+is maximal
+\begin{align} \nonumber
+ \argmax_w \frac{\bw^{\top} S\bw}{\bw^\top \bw}
+\end{align}
+
+This objective function is independent of the scaling of $\bw$.  \\ \pause
+\vspace{2em}
+Note the similarity to the objective of Linear Discriminant Analysis! \\
+\vspace{1em}
+$\rightarrow$ Different covariance matrices, different problem, but: same maths solve it
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Principal Component Analysis}
+\begin{align}\nonumber
+\argmax_{\bw} &\frac{\bw^{\top} S \bw}{\bw^\top\bw}
+\end{align}
+Set the derivative w.r.t $\bw$ to zero:\\
+\begin{align}\nonumber
+\frac{(\bw^{\top}\bw) 2 S \bw - (\bw^{\top}S \bw) 2 \bw}{(\bw^{\top}\bw)^2}= &0\\ \nonumber
+(\bw^{\top}S\bw)\bw = & (\bw^{\top}\bw)S\bw\\ \nonumber
+\bw = &S \bw \cdot \underbrace{\frac{\bw^{\top}\bw}{\bw^{\top}S\bw}}_{scalar} \\ \nonumber
+S \bw = & \lambda \bw
+\end{align}
+This is the standard eigenvalue problem.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Principal Component Analysis}
+For $S \bw = \lambda \bw $, we see that the variance in direction $\bw$ is given by:
+\begin{align}\nonumber
+\argmax_{\bw} &\frac{\bw^{\top} S \bw}{\bw^\top\bw} =  \frac{\bw^{\top} \lambda \bw}{\bw^\top\bw} = \lambda
+\end{align}
+The variance of the projected data in an eigendirection $\bw$ is given by the corresponding eigenvalue! \\ \pause
+\vspace{2em}
+The direction of maximal variance in the data is equal to the eigenvector having the largest eigenvalue.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]\frametitle{Principal Component Analysis}
+\scriptsize
+\begin{algorithm}[H]
+  \caption{Principal Component Analysis}
+  \begin{algorithmic}[1]
+    \REQUIRE data $x_1, \ldots, x_N \in \R^d$, number of principal components $k$
+    \STATE \# Center Data
+     \STATE $X = X - 1/N\sum_ix_i$
+     \STATE \# Compute Covariance Matrix
+     \STATE $C = 1/N ~XX^{\top}$
+     \STATE \# Compute eigenvectors corresponding to the $k$ largest eigenvalues
+     \STATE $W = \text{eig}(C)$
+     \STATE \# Project data onto $W$
+     \STATE $H = W^\top X$
+\RETURN W, H
+  \end{algorithmic}
+\end{algorithm}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Principal Component Analysis}
+\begin{columns}
+\column{.5\textwidth}
+\centering
+Before PCA
+\includegraphics[width=.8\textwidth]{figures/PCA_toy_before}
+
+\column{.5\textwidth}
+\pause
+\centering
+After PCA
+\includegraphics[width=.8\textwidth]{figures/PCA_toy_after}
+\end{columns}
+\centering
+
+\pause
+PCA aligns maximum variance directions with standard basis\\
+$\rightarrow$ Variance along each dimension is {\bf uncorrelated}\\
+$\rightarrow$ Now we can remove each dimension separately\\
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Non-Negative Matrix Factorization}
+\begin{frame}\frametitle{Non-Negative Matrix Factorization}
+\begin{itemize}
+\item For some data PCA does not make sense
+\item Example: Non-negative data
+\begin{itemize}
+\item Principal directions will have negative entries
+\item This can be hard to interpret
+\end{itemize}
+\item Many data sets are strictly positive
+\begin{itemize}
+\item Text data
+\item Image data
+\item Probabilistic data
+\end{itemize}
+\item Very easy to implement
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Non-Negative Matrix Factorization}
+\centering
+Given non-negative data $X\in\R^{D\times N}_+$ we want to find $W\in\R_+^{D\times C},~H\in\R_+^{C\times N}$ such that\\
+\begin{align} \nonumber
+\argmin_{W,H}||X-WH||_{\text{Fro}}^{2} = \argmin_{W,H} \sum_{d = 1}^{D}  \sum_{n = 1}^{N} (X_{dn}- (WH)_{dn})^{2}  \\\nonumber
+\end{align}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Non-Negative Matrix Factorization}
+\begin{itemize}
+\item Local minima  \pause
+\item Gradient descent finds an optimal solution by iterating
+\begin{align}\nonumber
+H \leftarrow H + \eta \left(W^{\top}WH - X^{\top}W\right)\\ \nonumber
+W \leftarrow W + \eta \left(WHH^{\top} - XH^{\top}\right) \nonumber
+\end{align} \pause
+\item By choosing $\eta$ wisely one can transform the additive updates into multiplicative ones:
+\begin{align}\nonumber
+H &= H \odot W^{\top}X \oslash W^{\top}WH\\ \nonumber
+W  & = W \odot XH^{\top} \oslash WHH^{\top}
+\end{align}
+where
+\begin{itemize}
+\item[$\odot$] is {\em element-wise} multiplication (in python '*')
+\item[$\oslash$] is {\em element-wise} division (in python '/')
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]\frametitle{NMF Algorithm}
+\scriptsize
+\begin{algorithm}[H]
+  \caption{Non-negative Matrix Factorization}
+  \begin{algorithmic}[1]
+    \REQUIRE data $X=[x_1, \ldots, x_N] \in \R_+^{D\times N}$, number of factors $k$
+    \STATE \# Initialize $W \in \R_+^{D\times k},~H \in \R_+^{k\times N}$ randomly
+    \STATE \# Add a small constant $\epsilon =10^{-19}$ to $X$ to avoid zero-divisions
+     \FOR{ it $\le$ Iterations}
+     \STATE $H = H \odot W^{\top}X \oslash W^{\top}WH$
+     \STATE $W = W \odot XH^{\top} \oslash WHH^{\top}$
+     \ENDFOR
+\RETURN $W,H$
+  \end{algorithmic}
+\end{algorithm}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{NMF Applications - Face Parts}
+\centering
+\includegraphics[width=.5\textwidth]{figures/nmf_imag2}\\
+\includegraphics[width=.5\textwidth]{figures/nmf_imag}\\
+\end{frame}
 
 \begin{frame}%[allowframebreaks]  % Uncomment if you need more than one page for references
   \frametitle{References}

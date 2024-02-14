@@ -1,0 +1,15 @@
+\frametitle{NMF Algorithm}
+\scriptsize
+\begin{algorithm}[H]
+  \caption{Non-negative Matrix Factorization}
+  \begin{algorithmic}[1]
+    \REQUIRE data $X=[x_1, \ldots, x_N] \in \R_+^{D\times N}$, number of factors $k$
+    \STATE \# Initialize $W \in \R_+^{D\times k},~H \in \R_+^{k\times N}$ randomly
+    \STATE \# Add a small constant $\epsilon =10^{-19}$ to $X$ to avoid zero-divisions
+     \FOR{ it $\le$ Iterations}
+     \STATE $H = H \odot W^{\top}X \oslash W^{\top}WH$
+     \STATE $W = W \odot XH^{\top} \oslash WHH^{\top}$
+     \ENDFOR
+\RETURN $W,H$
+  \end{algorithmic}
+\end{algorithm}
