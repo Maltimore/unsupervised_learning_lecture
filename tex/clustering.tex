@@ -21,6 +21,7 @@
 \usepackage{svg}
 \usepackage{algorithm2e}
 \usepackage{algorithmic}
+\usepackage{mycommands}
 
 \newcommand{\R}{\ensuremath{\mathds{R}}}
 \newcommand{\x}{\boldsymbol{x}}
@@ -45,7 +46,6 @@
 % Eigenes Logo einfuegen:
 \renewcommand{\pathtomylogo}{ida_logo}
 
-\usepackage{mycommands}
 
 \AtBeginSubsection[]
 {
@@ -85,16 +85,7 @@
 \end{frame}
 
 \begin{frame}
- \frametitle{Unsupervised Learning}
-  \begin{center}
-    \vfill
-    \includegraphics[width=\textwidth]{ml_schema_sel}
-    \vfill
-  \end{center}
-\end{frame}
-
-\begin{frame}
- \frametitle{Unsupervised Learning}
+ \frametitle{Unsupervised Learning Motivation}
   \begin{center}
     \begin{quote}
       When we’re learning to see, nobody's telling us what the right
@@ -109,7 +100,16 @@
     \end{quote}
   Geoffrey Hinton, 1996
   \end{center}
-  Genome: $3 * 10^9$ base-pairs (A, T, C, G), with 2 bits per location has  $6 * 10^9$ bits.
+  Genome: $3 * 10^9$ base-pairs (A, T, C, G), with 2 bits per location has  $6 * 10^9$ bits. \\
+
+  \pause
+  Yann LeCun's cake analogy (2016):
+  - Unsupervised learning is the take itself
+  - Supervised learning is the icing
+  - Reinforcement Learning is the cherry on top
+
+  \pause
+  ChatGPT is unsupervised learning!
 \end{frame}
 
 
@@ -139,7 +139,7 @@
 
 
 \section{Distance and Similarity measures}
-\subsection{Euclidean distance}
+\subsection{Euclidean and Minkowski distance}
 \begin{frame}[t]
   \frametitle{Euclidean distance}
   \begin{columns}[T]
@@ -198,7 +198,6 @@
   \end{columns}
 \end{frame}
 
-\subsection{Minkowski distance}
 \begin{frame}[t]
   \frametitle{Minkowski distance}
   \begin{columns}[T]
@@ -242,7 +241,6 @@
 \end{frame}
 
 
-\subsection{Squared euclidean distance}
 \begin{frame}
   \frametitle{Squared euclidean distance}
   Squared euclidean distance:
@@ -429,7 +427,7 @@
     \mathpzc{L} = \sum_c \sum_{i \in \mathpzc{D}_c} d(\x_i, \mu_c)
   \end{equation*}
   \pause
-  Finding a solution is NP-hard
+  Finding a solution is NP-hard, but in practice straightforward
   \\
   K-means cannot work with pairwise data such as user ratings
 \end{frame}
@@ -466,7 +464,8 @@
     \item arbitrary cluster shapes
   \end{itemize}
   \begin{centering}
-  \includegraphics[width=0.2\textwidth]{DBSCAN_data.png}
+  \includegraphics[width=0.2\textwidth]{DBSCAN_data.png}\\
+  \tiny (Wikipedia "DBSCAN")
   \end{centering}
   \pause
   \normalsize
@@ -527,7 +526,7 @@
 
 
 \section{Dimensionality reduction}
-\subsection{Principal Component Analysis}
+\subsection{Motivation}
 %%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}\frametitle{Dimensionalty Reduction - Motivation}
 In many applications, we have
@@ -540,11 +539,18 @@ In many applications, we have
 \vspace{1em} \pause
 Examples:
 \begin{itemize}
-\item you want to classify high resolution images
-\item you want to make a predictive model based on hundreds of customer attributes
-\item you want to analyse high dimensional neural data
-\item you want to detect trends in news data
+\item classify high resolution images
+\item make a predictive model based on hundreds of customer attributes
+\item analyse high dimensional neural data
+\item detect trends in news data
 \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Swiss roll data}
+\centering
+\includegraphics[width=.8\textwidth]{swiss_roll_sklearn}\\
+\tiny Scikit-Learn swiss roll dataset
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -559,6 +565,7 @@ Less storage requirements
 \end{itemize}
 \end{frame}
 
+\subsection{Principal Component Analysis}
 %%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}\frametitle{The mathematical model for dimensionalty reduction}
 We have
@@ -670,13 +677,13 @@ The direction of maximal variance in the data is equal to the eigenvector having
 \column{.5\textwidth}
 \centering
 Before PCA
-\includegraphics[width=.8\textwidth]{figures/PCA_toy_before}
+\includegraphics[width=.8\textwidth]{PCA_toy_before}
 
 \column{.5\textwidth}
 \pause
 \centering
 After PCA
-\includegraphics[width=.8\textwidth]{figures/PCA_toy_after}
+\includegraphics[width=.8\textwidth]{PCA_toy_after}
 \end{columns}
 \centering
 
@@ -759,10 +766,33 @@ where
 %%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}\frametitle{NMF Applications - Face Parts}
 \centering
-\includegraphics[width=.5\textwidth]{figures/nmf_imag2}\\
-\includegraphics[width=.5\textwidth]{figures/nmf_imag}\\
+\includegraphics[width=.5\textwidth]{nmf_imag2}\\
+\includegraphics[width=.5\textwidth]{nmf_imag}\\
 \end{frame}
 
+\subsection{Nonlinear dimensionality reduction examples}
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{Autoencoder}
+  Two parts: \\
+  Encoder: A neural network that forces the input into a low-dimensional "code"\\
+  Decoder: A neural network that tries to reconstruct the input from the "code"
+
+  \centering
+  \includegraphics[width=.5\textwidth]{autoencoder}\\
+  \tiny Wikipedia autoencoder
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}\frametitle{t-SNE (t-distributed Stochastic Neighbor Embedding)}
+  Unlike Autoencoder, non-parametric, i.e. can not easily embed new points.\\
+  Local similarities in the data preserved, higher distances not preserved.\\
+
+  \centering
+  \includegraphics[width=.3\textwidth]{T-SNE_Embedding_of_MNIST.png}\\
+  \tiny Wikipedia t-SNE. A visualization of MNIST in two t-SNE dimensions.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}%[allowframebreaks]  % Uncomment if you need more than one page for references
   \frametitle{References}
   \printbibliography
