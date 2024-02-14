@@ -346,13 +346,6 @@
   \end{center}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Dendrogram with squared Euclidean distance}
-  \begin{center}
-    \centering\includegraphics[width=0.8\textwidth]{dendrogram_squared_euclidean.pdf}
-  \end{center}
-\end{frame}
-
 
 \begin{frame}
   \frametitle{Cluster distance measures}
@@ -473,8 +466,7 @@
     \item arbitrary cluster shapes
   \end{itemize}
   \begin{centering}
-  \includegraphics[width=0.5\textwidth]{DBSCAN_data.png}
-  \tiny \cite{ester1996density}\\
+  \includegraphics[width=0.2\textwidth]{DBSCAN_data.png}
   \end{centering}
   \pause
   \normalsize
@@ -494,15 +486,15 @@
          \item $\epsilon$: distance, defines a neighborhood
          \item MinPts: amount of neighbors to be a core point
        \end{itemize}
-       \pause
+       \onslide<3->
       Three types of points:
       \begin{itemize}
         \item core: has MinPts points in its epsilon-neighborhood
         \item border: within epsilon-neighborhood of core point
         \item noise: all other points
       \end{itemize}
-    \column{0.3\textwidth}
-      \onslide<3->
+    \column{0.4\textwidth}
+      \onslide<2->
       \includegraphics[width=1.0\textwidth]{DBSCAN_illustration.png}\\
       \tiny (Wikipedia "DBSCAN")
   \end{columns}
